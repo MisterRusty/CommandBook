@@ -31,6 +31,7 @@ import com.zachsthings.libcomponents.ComponentInformation;
 import com.zachsthings.libcomponents.InjectComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -98,23 +99,38 @@ public class WarpsComponent extends LocationsComponent {
             (new TeleportPlayerIterator(sender, loc, args.hasFlag('s'))).iterate(targets);
         }
 
-        @Command(aliases = {"setwarp"}, usage = "<warp> [location]", desc = "Set a warp", min = 1, max = 2)
+        @Command(aliases = {"setwarp"}, usage = "<warp> [location] [owner]", desc = "Set a warp", min = 1, max = 3)
         @CommandPermissions({"commandbook.warp.set"})
         public void setWarp(CommandContext args, CommandSender sender) throws CommandException {
             String warpName = args.getString(0);
             Location loc;
-            Player player = null;
+            OfflinePlayer player = null;
 
             // Detect arguments based on the number of arguments provided
             if (args.argsLength() == 1) {
-                player = PlayerUtil.checkPlayer(sender);
-                loc = player.getLocation();
+                Player tPlayer = PlayerUtil.checkPlayer(sender);
+                player = tPlayer;
+                loc = tPlayer.getLocation();
             } else {
                 loc = InputUtil.LocationParser.matchLocation(sender, args.getString(1));
                 if (sender instanceof Player) {
                     player = (Player) sender;
                 }
             }
+
+            if (args.argsLength() > 2) {
+                try {
+                    player = InputUtil.PlayerParser.matchSinglePlayer(sender, args.getString(2));
+                } catch (CommandException ex) {
+                    player = CommandBook.server().getOfflinePlayer(args.getString(2));
+
+                }
+            }
+
+            if (player == null) {
+                throw new CommandException("No player by that name online or offline could be found!");
+            }
+
             NamedLocation existing = getManager().get(loc.getWorld(), warpName);
             if (existing != null) {
                 if (!existing.getCreatorName().equals(sender.getName())) {

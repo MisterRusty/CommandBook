@@ -28,6 +28,7 @@ import com.sk89q.minecraft.util.commands.*;
 import com.zachsthings.libcomponents.ComponentInformation;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -105,36 +106,39 @@ public class HomesComponent extends LocationsComponent {
         @Command(aliases = {"sethome"}, usage = "[owner] [location]", desc = "Set a home", min = 0, max = 2)
         @CommandPermissions({"commandbook.home.set"})
         public void setHome(CommandContext args, CommandSender sender) throws CommandException {
-            String homeName;
             Location loc;
-            Player player = null;
+            OfflinePlayer player;
 
             // Detect arguments based on the number of arguments provided
-            if (args.argsLength() == 0) {
-                player = PlayerUtil.checkPlayer(sender);
-                homeName = player.getName();
-                loc = player.getLocation();
-            } else if (args.argsLength() == 1) {
-                homeName = args.getString(0);
-                player = PlayerUtil.checkPlayer(sender);
-                loc = player.getLocation();
-
-                // Check permissions!
-                if (!homeName.equals(sender.getName())) {
-                    CommandBook.inst().checkPermission(sender, "commandbook.home.set.other");
+            if (args.argsLength() > 0) {
+                if (args.argsLength() > 1) {
+                    try {
+                        player = InputUtil.PlayerParser.matchSinglePlayer(sender, args.getString(0));
+                    } catch (CommandException ex) {
+                        player = CommandBook.server().getOfflinePlayer(args.getString(0));
+                    }
+                    loc = InputUtil.LocationParser.matchLocation(sender, args.getString(1));
+                } else {
+                    Player tPlayer = InputUtil.PlayerParser.matchSinglePlayer(sender, args.getString(0));
+                    player = tPlayer;
+                    loc = tPlayer.getLocation();
                 }
             } else {
-                homeName = args.getString(1);
-                loc = InputUtil.LocationParser.matchLocation(sender, args.getString(0));
+                Player tPlayer = PlayerUtil.checkPlayer(sender);
+                player = tPlayer;
+                loc = tPlayer.getLocation();
+            }
 
-                // Check permissions!
-                if (!homeName.equals(sender.getName())) {
-                    CommandBook.inst().checkPermission(sender, "commandbook.home.set.other");
-                }
+            if (player == null) {
+                throw new CommandException("No player by that name online or offline could be found!");
+            }
+
+            if (!player.equals(sender)) {
+                CommandBook.inst().checkPermission(sender, "commandbook.home.set.other");
             }
 
             try {
-                getManager().create(homeName, loc, player);
+                getManager().create(player.getName(), loc, player);
             } catch (IllegalArgumentException ex) {
                 throw new CommandException("Invalid home name!");
             }
