@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.sk89q.commandbook.CommandBook.logger;
 
@@ -115,6 +116,10 @@ public class RootLocationManager<T> {
 
     public List<T> getLocations(World world) {
         return getManager(world).getLocations();
+    }
+
+    public List<T> getLocations(World world, UUID owner) {
+        return owner == null ? getLocations(world) : getManager(world).getLocations(owner);
     }
 
     public boolean isPerWorld() {
