@@ -20,6 +20,7 @@ package com.sk89q.commandbook.kits;
 
 import com.google.common.collect.Lists;
 import com.sk89q.commandbook.CommandBook;
+import com.sk89q.commandbook.item.ItemComponent;
 import com.sk89q.commandbook.util.ChatUtil;
 import com.sk89q.commandbook.util.InputUtil;
 import com.sk89q.commandbook.util.entity.player.PlayerUtil;
@@ -27,6 +28,7 @@ import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.zachsthings.libcomponents.ComponentInformation;
+import com.zachsthings.libcomponents.Depend;
 import com.zachsthings.libcomponents.bukkit.BukkitComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -40,6 +42,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @ComponentInformation(friendlyName = "Kits", desc = "Distributes kits to players on command (with cooldowns)")
+@Depend(components = {ItemComponent.class})
 public class KitsComponent extends BukkitComponent implements Listener {
     private KitManager kits;
 
